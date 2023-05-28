@@ -1,0 +1,8 @@
+version: 3
+
+tasks:
+  dev:
+    dotenv:
+      - .secrets/env
+    cmds:
+      - npm run dev
