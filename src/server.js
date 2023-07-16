@@ -1,21 +1,25 @@
 import express from 'express'
-import { ApolloServer } from 'apollo-server';
+import { ApolloServer } from 'apollo-server-express';
 import { resolvers } from './gql/resolvers.js'
 import { typeDefs } from './gql/typeDefs.js';
 import cors from 'cors'
 import http from 'http'
 import {WebSocketServer} from 'ws';
 
-// Configuring graphql server
+// // Configuring graphql server
+// const app = express()
 
-// const server = new ApolloServer({
-//     typeDefs: typeDefs,
-//     resolvers: resolvers
-// })
+// const apolloServer = new ApolloServer({
+//     typeDefs,
+//     resolvers
+// });
 
 // const port = process.env.PORT
 
-// server.listen({port}, (err) => {
+// await apolloServer.start();
+// apolloServer.applyMiddleware({ app })
+
+// app.listen({port}, (err) => {
 //     if(err) {
 //         console.log("Error: ", err)
 //     }
@@ -25,17 +29,20 @@ import {WebSocketServer} from 'ws';
 // Configuring graphql server along with websocket
 
 const app = express()
+const server = http.createServer(app);
 
-const server = new ApolloServer({
-    typeDefs: typeDefs,
-    resolvers: resolvers
-})
-
-const httpServer = http.createServer({server})
+const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers
+});
 
 const port = process.env.PORT
 
-const socket = new WebSocketServer({ server: httpServer })
+app.use(cors())
+await apolloServer.start();
+apolloServer.applyMiddleware({ app })
+
+export const socket = new WebSocketServer({ server })
 
 socket.on('connection', wss => {
     console.log('Websocket connection started')
@@ -44,9 +51,9 @@ socket.on('connection', wss => {
     })
 })
 
-httpServer.listen(port, '0.0.0.0', (err) => {
-    if (err) {
+server.listen(port, (err) => {
+    if(err) {
         console.log(err)
     }
-    console.log(`Server listening on Port ${port}`)
-})
+    console.log(`server listening on port ${port}`)
+}) 
